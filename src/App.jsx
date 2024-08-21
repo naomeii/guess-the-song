@@ -34,6 +34,8 @@ function App() {
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
 
+  const [newGame, setNewGame] = useState(false)
+
   useEffect(() => {
     const hash = window.location.hash // the URL
     let token = window.localStorage.getItem('token') // retrieve token from LS
@@ -56,19 +58,24 @@ function App() {
     window.localStorage.removeItem('token');
   }
 
-  const searchArtists = async (e) => {
-    e.preventDefault()
-    // reset on error msg
-    setErrorMessage('');
+  const resetAllData = () => {
+    // setErrorMessage('');
     setArtistName('');
     setTrackList([]);
     setChosenTrack(null);
     setLyrics('');
-    // setPlayable(true);
+    setRandomLyrics('');
     setCorrectLetters([]);
     setWrongLetters([]);
     setShowNotification(false);
+  }
 
+  const searchArtists = async (e) => {
+    e.preventDefault()
+    // reset on error msg
+    setErrorMessage('');
+    setNewGame(false)
+    resetAllData()
     // requests
     const {data} = await axios.get('https://api.spotify.com/v1/search', {
       headers: {
@@ -145,7 +152,7 @@ function App() {
     } catch (err) {
       console.error(err);
       setErrorMessage('Something went wrong. Please search again.')
-      setLyrics('')
+      resetAllData()
     }
   }
 
@@ -212,8 +219,9 @@ function App() {
       }
   
       // Convert letter to lowercase to match the answer format
-      const answer = chosenTrack.name.title.toLowerCase().trim();
-  
+      const answer = chosenTrack.name.title.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '');  // remove special symbols
+      console.log('full answer: ', answer)
+
       // Ensure the keyCode is between 65 and 90 (A-Z)
       if (playable) {
           
@@ -239,23 +247,35 @@ function App() {
       }
     };
   
-    // Add event listener for keydown
-    window.addEventListener('keydown', handleKeydown);
+    // Add event listener for keys pressed only if theres an artist
+    if (artistName){
+      window.addEventListener('keydown', handleKeydown);
+    }
   
     // Cleanup: remove event listener when the component unmounts or dependencies change
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [chosenTrack, correctLetters, wrongLetters, playable]);
+  }, [artistName,chosenTrack, correctLetters, wrongLetters, playable]);
 
 
   const playAgain = () => {
     setPlayable(true);
     // reset states
-    setCorrectLetters([]);
-    setWrongLetters([]);
+    // resetAllData()
+    setCorrectLetters([])
+    setWrongLetters([])
 
     // get random track from trackList
     getRandomTrack(trackList);
+  }
 
+  const newArtist = () => {
+    setNewGame(true);
+    // reset states
+    resetAllData()
+
+
+    // get random track from trackList
+    getRandomTrack(trackList);
   }
 
   return (
@@ -267,39 +287,52 @@ function App() {
         : 
         <>
           <button className="logout-button" onClick={handleLogout}>Logout</button>
-          {!artistName || errorMessage || playable ? 
-          (
-            <>
+          {
+            newGame ?
+            (<>
               <form onSubmit={searchArtists}>
                 <input className="search-bar" type="text" placeholder="Enter artist name" onChange={e => setSearchKey(e.target.value)} />
                 <button className="search-button" type="submit">Search</button>
               </form>
               {errorMessage && <p>{errorMessage}</p>}
             </>
-          ) 
-          : 
-          (
-            <>
-              <pre>{randomLyrics !== '' && randomLyrics.join('\n')}</pre>
-                <p>
-                  {chosenTrack && chosenTrack.name.feature && `Hint: ${chosenTrack.name.feature}`}
-                  {chosenTrack && chosenTrack.name.feature && <br />}
-                  {chosenTrack && `Release date: ${chosenTrack.releaseDate}`}
-                </p>
-
-                {artistName !== '' && chosenTrack &&
+            )
+            :
+            !artistName || errorMessage ? 
+              (
                 <>
-                  <div className="game-container">
-                  <Figure wrongLetters={wrongLetters} />
-                  <WrongLetters wrongLetters={wrongLetters} />
-                  <Word selectedWord={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
-                  </div>
-                  <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} selectedWord={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} />
-                  <Notification showNotification={showNotification} />
+                  <form onSubmit={searchArtists}>
+                    <input className="search-bar" type="text" placeholder="Enter artist name" onChange={e => setSearchKey(e.target.value)} />
+                    <button className="search-button" type="submit">Search</button>
+                  </form>
+                  {errorMessage && <p>{errorMessage}</p>}
                 </>
-                }
-            </>
-          )}
+              ) 
+              : 
+              (
+                <>
+                  <pre>{randomLyrics !== '' && randomLyrics.join('\n')}</pre>
+                    <p>
+                      {chosenTrack && chosenTrack.name.feature && `Hint: ${chosenTrack.name.feature}`}
+                      {chosenTrack && chosenTrack.name.feature && <br />}
+                      {chosenTrack && `Release date: ${chosenTrack.releaseDate}`}
+                    </p>
+    
+                    {artistName !== '' && chosenTrack &&
+                    <>
+                      <div className="game-container">
+                      <Figure wrongLetters={wrongLetters} />
+                      <WrongLetters wrongLetters={wrongLetters} />
+                      <Word selectedWord={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
+                      </div>
+                      <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} selectedWord={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} newArtist={newArtist} />
+                      <Notification showNotification={showNotification} />
+                    </>
+                    }
+                </>
+              )
+          }
+
          </>
         }
     </>

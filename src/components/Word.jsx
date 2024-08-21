@@ -1,10 +1,12 @@
 const Word = ({ selectedWord, correctLetters }) => {
-  
+
+  const typeableChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
   return (
     <div className="word">
       {selectedWord.split('').map((letter, i) => {
-        // Filter out apostrophes and spaces from the word
-        if (letter === ' ' || letter === "'") {
+        // Filter out special chars
+        if (!typeableChars.includes(letter)) {
           return <span className="special" key={i}>
             {letter}
           </span>;

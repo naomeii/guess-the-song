@@ -12,10 +12,12 @@ export function showNotification(setter) {
     // console.log('wrong:', wrong)
     // console.log('word:', word)
 
+    const typeableChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
     // Check for win
     word.split('').forEach(letter => {
-      // skip spaces and apostrophes
-      if (letter !== ' ' && letter !== '\'' && !correct.includes(letter)) {
+      // don't check the special chars
+      if (typeableChars.includes(letter) && !correct.includes(letter)) {
         status = '';
       }
     });
