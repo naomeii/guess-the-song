@@ -64,7 +64,7 @@ function App() {
     setTrackList([]);
     setChosenTrack(null);
     setLyrics('');
-    setPlayable(false);
+    // setPlayable(true);
     setCorrectLetters([]);
     setWrongLetters([]);
     setShowNotification(false);
@@ -261,19 +261,18 @@ function App() {
   return (
     <>
       {/* <Header /> */}
-      <h2>Guess the Song!</h2>
+      <h2>Guess the Song</h2>
         {!token ? 
         <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login to Spotify</a>
         : 
         <>
-          <button onClick={handleLogout}>Logout</button>
-
-          {!artistName || errorMessage ? 
+          <button className="logout-button" onClick={handleLogout}>Logout</button>
+          {!artistName || errorMessage || playable ? 
           (
             <>
               <form onSubmit={searchArtists}>
-                <input type="text" onChange={e => setSearchKey(e.target.value)} />
-                <button type="submit">Search</button>
+                <input className="search-bar" type="text" placeholder="Enter artist name" onChange={e => setSearchKey(e.target.value)} />
+                <button className="search-button" type="submit">Search</button>
               </form>
               {errorMessage && <p>{errorMessage}</p>}
             </>

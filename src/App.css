@@ -3,8 +3,8 @@
 }
 
 body, #root {
-  background-color: #34495e;
-  color: #fff;
+  background-color: #191414;
+  color: lightgray;
   font-family: Arial, Helvetica, sans-serif;
   display: flex;
   flex-direction: column;
@@ -14,8 +14,46 @@ body, #root {
   overflow: hidden;
 }
 
+pre {
+  color:  #21c65b;
+  font-size: large;
+}
+
 h1 {
   margin: 20px 0 0;
+}
+
+.search-button {
+  padding: 5px 12px;
+  background-color: #1db954;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-bar {
+  height: 30px; 
+  padding: 5px 12px; /* text spacing */
+  margin-right: 10px; /* space between input and button */
+  color: black;  /*text color*/
+  background-color: white;
+  border: 2px solid green;
+  border-radius: 4px; 
+  flex: 1; 
+}
+
+.logout-button {
+  position: absolute; /* Position the button absolutely within the container */
+  top: 10px; /* Adjust as needed for spacing from the top */
+  right: 10px; /* Adjust as needed for spacing from the right */
+  /* Optional: Add more styles for the button */
+  padding: 5px 12px;
+  background-color: #f44336; /* Example color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .game-container {
@@ -63,7 +101,7 @@ h1 {
 }
 
 .letter {
-  border-bottom: 3px solid #2980b9;
+  border-bottom: 3px solid #1db954;
   display: inline-flex;
   font-size: 30px;
   align-items: center;
@@ -98,7 +136,8 @@ h1 {
 }
 
 .popup {
-  background: #2980b9;
+  background: white;
+  color: black;
   border-radius: 5px;
   box-shadow: 0 15px 10px 3px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -107,8 +146,8 @@ h1 {
 
 .popup button {
   cursor: pointer;
-  background-color: #fff;
-  color: #2980b9;
+  background-color: #1db954;
+  color: white;
   border: 0;
   margin-top: 20px;
   padding: 12px 20px;

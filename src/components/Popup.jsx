@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { checkWin } from '../helpers/helpers';
 
 const Popup = ({correctLetters, wrongLetters, selectedWord, setPlayable, playAgain}) => {
@@ -11,7 +11,7 @@ const Popup = ({correctLetters, wrongLetters, selectedWord, setPlayable, playAga
     playable = false;
   } else if( checkWin(correctLetters, wrongLetters, selectedWord) === 'lose' ) {
     finalMessage = 'Unfortunately you lost. 😕';
-    finalMessageRevealWord = `...the word was: ${selectedWord}`;
+    finalMessageRevealWord = `...the song was: ${selectedWord}`;
     playable = false;
   }
 
