@@ -23,9 +23,7 @@ function App() {
 
   const [artistName, setArtistName] = useState('')
   const [trackList, setTrackList] = useState('')
-  const [randomTracks, setRandomTracks] = useState('')
   const [chosenTrack, setChosenTrack] = useState(null)
-  // const [quizData, setQuizData] = useState(null)
 
   const [lyrics, setLyrics] = useState('')
   const [randomLyrics, setRandomLyrics] = useState('')
@@ -48,30 +46,6 @@ function App() {
 
   }, [])
 
-  const getRandomTracks = (tracks, numTracks = 4) => {
-    const theTracks = [];
-    
-    // Ensure there's at least one track and chosenTrack is not empty
-    if (tracks.length > 0 && chosenTrack.name.title) {
-      // Start by adding the chosen track
-      theTracks.push(chosenTrack.name.title);
-      let count = 1;
-
-      while (count < numTracks) {
-        const randomIndex = Math.floor(Math.random() * tracks.length);
-        const trackFromList = tracks[randomIndex];
-
-        // Avoid duplicates and make sure we don't add the same track
-        if (trackFromList.name !== chosenTrack.name.title && !theTracks.includes(trackFromList.name)) {
-          theTracks.push(trackFromList.name);
-          count++;
-        }
-      }
-    }
-
-    setRandomTracks(theTracks);
-  };
-
   const handleLogout = () => {
     setToken('');
     window.localStorage.removeItem('token');
@@ -79,7 +53,7 @@ function App() {
 
   const searchArtists = async (e) => {
     e.preventDefault()
-    // reset error
+    // reset error msg
     setErrorMessage('')
 
     // requests
@@ -96,15 +70,18 @@ function App() {
     const artistObj = data.artists.items[0]
     setArtistName(artistObj.name)
 
-    const artistID = artistObj.id
-
-    const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistID}/top-tracks`, {
+    const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistObj.id}/top-tracks`, {
       headers: {
         Authorization: `Bearer ${token}`
       },
     })
 
-    const artistTracksList = artistTopTracks.data.tracks
+    getRandomTrack(artistTopTracks.data.tracks)
+  }
+
+  const getRandomTrack = (artistTracksList) => {
+    setTrackList(artistTracksList)
+
     const randomTrack = Math.floor(Math.random() * artistTracksList.length)
     const selectedTrack = artistTracksList[randomTrack]
 
@@ -116,7 +93,6 @@ function App() {
     }
 
     setChosenTrack(createdTrack)
-    setTrackList(artistTracksList)
   }
 
   const trackNameAndFeature = (str) => {
@@ -157,7 +133,6 @@ function App() {
       console.error(err);
       setErrorMessage('Something went wrong. Please search again.')
       setLyrics('')
-      // setRandomLyrics('Something went wrong. Please try again.')
     }
   }
 
@@ -186,7 +161,7 @@ function App() {
     if (chosenTrack && artistName && trackList){
       console.log('track title: ', chosenTrack.name.title)
       getLyrics()
-      getRandomTracks(trackList);
+      // getRandomTrack(trackList);
     }
   }, [chosenTrack, artistName, trackList]) // dependency array
 
@@ -200,11 +175,10 @@ function App() {
 
   // rerender when randomLyrics value was set
   useEffect(() => {
-    if (randomLyrics && randomTracks) {
-      console.log('random tracks: ', randomTracks)
+    if (randomLyrics) {
       console.log('random lyrics: ', randomLyrics);
     }
-  }, [randomLyrics, randomTracks]);
+  }, [randomLyrics]);
 
   //////////////////////
 
@@ -265,15 +239,14 @@ function App() {
   }, [chosenTrack, correctLetters, wrongLetters, playable]);
 
 
-  function playAgain() {
+  const playAgain = () => {
     setPlayable(true);
-
     // reset states
     setCorrectLetters([]);
     setWrongLetters([]);
 
-    // const random = Math.floor(Math.random() * words.length);
-    // selectedWord = words[random];
+    // get random track from trackList
+    getRandomTrack(trackList);
 
   }
 
@@ -311,7 +284,8 @@ function App() {
                   :
                   <></>
                 }
-                  {errorMessage}</p>
+                  {errorMessage}
+                </p>
               ) : (
                 <>
                   <pre>
