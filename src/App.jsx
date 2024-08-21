@@ -29,6 +29,11 @@ function App() {
   const [randomLyrics, setRandomLyrics] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
+  const [playable, setPlayable] = useState(true);
+  const [correctLetters, setCorrectLetters] = useState([]);
+  const [wrongLetters, setWrongLetters] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+
   useEffect(() => {
     const hash = window.location.hash // the URL
     let token = window.localStorage.getItem('token') // retrieve token from LS
@@ -53,8 +58,16 @@ function App() {
 
   const searchArtists = async (e) => {
     e.preventDefault()
-    // reset error msg
-    setErrorMessage('')
+    // reset on error msg
+    setErrorMessage('');
+    setArtistName('');
+    setTrackList([]);
+    setChosenTrack(null);
+    setLyrics('');
+    setPlayable(false);
+    setCorrectLetters([]);
+    setWrongLetters([]);
+    setShowNotification(false);
 
     // requests
     const {data} = await axios.get('https://api.spotify.com/v1/search', {
@@ -182,11 +195,6 @@ function App() {
 
   //////////////////////
 
-  const [playable, setPlayable] = useState(true);
-  const [correctLetters, setCorrectLetters] = useState([]);
-  const [wrongLetters, setWrongLetters] = useState([]);
-  const [showNotification, setShowNotification] = useState(false);
-
   useEffect(() => {
     const handleKeydown = event => {
       const { key, keyCode } = event;
@@ -254,64 +262,46 @@ function App() {
     <>
       {/* <Header /> */}
       <h2>Guess the Song!</h2>
-        {
-        !token ? 
+        {!token ? 
         <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login to Spotify</a>
-         : 
-
-         <>
+        : 
+        <>
           <button onClick={handleLogout}>Logout</button>
 
-          {
-            !artistName ? 
-            <form onSubmit={searchArtists}>
+          {!artistName || errorMessage ? 
+          (
+            <>
+              <form onSubmit={searchArtists}>
                 <input type="text" onChange={e => setSearchKey(e.target.value)} />
                 <button type="submit">Search</button>
-            </form>
-            :
-            <></>
-          }
-
-          {
-              errorMessage ? (
+              </form>
+              {errorMessage && <p>{errorMessage}</p>}
+            </>
+          ) 
+          : 
+          (
+            <>
+              <pre>{randomLyrics !== '' && randomLyrics.join('\n')}</pre>
                 <p>
-                {
-                  !artistName ? 
-                  <form onSubmit={searchArtists}>
-                      <input type="text" onChange={e => setSearchKey(e.target.value)} />
-                      <button type="submit">Search</button>
-                  </form>
-                  :
-                  <></>
-                }
-                  {errorMessage}
+                  {chosenTrack && chosenTrack.name.feature && `Hint: ${chosenTrack.name.feature}`}
+                  {chosenTrack && chosenTrack.name.feature && <br />}
+                  {chosenTrack && `Release date: ${chosenTrack.releaseDate}`}
                 </p>
-              ) : (
-                <>
-                  <pre>
-                    {randomLyrics !== '' && randomLyrics.join('\n')}
-                  </pre>
-                  <p>
-                    {chosenTrack && chosenTrack.name.feature && `Hint: ${chosenTrack.name.feature}`}
-                    {chosenTrack && chosenTrack.name.feature && <br />}
-                    {chosenTrack && `Release date: ${chosenTrack.releaseDate}`}
-                  </p>
-                </>
-              )
-            }
-         </>
-        }
 
-        {artistName !== '' && chosenTrack &&
-        <>
-          <div className="game-container">
-          <Figure wrongLetters={wrongLetters} />
-          <WrongLetters wrongLetters={wrongLetters} />
-          <Word selectedWord={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
-          </div>
-          <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} selectedWord={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} />
-          <Notification showNotification={showNotification} />
-        </>
+                {artistName !== '' && chosenTrack &&
+                <>
+                  <div className="game-container">
+                  <Figure wrongLetters={wrongLetters} />
+                  <WrongLetters wrongLetters={wrongLetters} />
+                  <Word selectedWord={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
+                  </div>
+                  <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} selectedWord={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} />
+                  <Notification showNotification={showNotification} />
+                </>
+                }
+            </>
+          )}
+         </>
         }
     </>
   );
