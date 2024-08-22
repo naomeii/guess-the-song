@@ -22,10 +22,9 @@ function App() {
   const [searchKey, setSearchKey] = useState('')
 
   const [artistName, setArtistName] = useState('')
-  const [trackList, setTrackList] = useState('')
+  const [tracks, setTracks] = useState('')
   const [chosenTrack, setChosenTrack] = useState(null)
 
-  const [lyrics, setLyrics] = useState('')
   const [randomLyrics, setRandomLyrics] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -61,9 +60,8 @@ function App() {
   const resetAllData = () => {
     // setErrorMessage('');
     setArtistName('');
-    setTrackList([]);
+    setTracks([]);
     setChosenTrack(null);
-    setLyrics('');
     setRandomLyrics('');
     setCorrectLetters([]);
     setWrongLetters([]);
@@ -100,7 +98,7 @@ function App() {
   }
 
   const getRandomTrack = (artistTracksList) => {
-    setTrackList(artistTracksList)
+    setTracks(artistTracksList)
 
     const randomTrack = Math.floor(Math.random() * artistTracksList.length)
     const selectedTrack = artistTracksList[randomTrack]
@@ -142,13 +140,12 @@ function App() {
     if (!artistName === '' || !chosenTrack.name.title === ''){
       return;
     }
-
-    setLyrics('')
+    console.log(tracks)
 
     try {
       const response = await axios.get(`https://api.lyrics.ovh/v1/${artistName}/${chosenTrack.name.title}`)
       // console.log(response.data.lyrics)
-      setLyrics(response.data.lyrics)
+      generateRandomLyrics(response.data.lyrics)
     } catch (err) {
       console.error(err);
       setErrorMessage('Something went wrong. Please search again.')
@@ -156,7 +153,8 @@ function App() {
     }
   }
 
-  const generateRandomLyrics = (numLines = 3) => {
+  const generateRandomLyrics = (lyrics) => {
+    const numLines = 3
     // remove carriage returns and split lyrics string into an array of lines
     const lines = lyrics
     .replace(/\r/g, '') // remove carriage returns
@@ -178,27 +176,19 @@ function App() {
 
   // allows u to use track immediately after using setTrack
    useEffect(() => {
-    if (chosenTrack && artistName && trackList){
+    if (chosenTrack && artistName && tracks){
       console.log('track title: ', chosenTrack.name.title)
       getLyrics()
       // getRandomTrack(trackList);
     }
-  }, [chosenTrack, artistName, trackList]) // dependency array
+  }, [chosenTrack, artistName, tracks]) // dependency array
 
-  // rerender when lyrics value was set
-  useEffect(() => {
-    if (lyrics !== '') {
-      generateRandomLyrics();
-    }
-  }, [lyrics]);
-
-
-  // rerender when randomLyrics value was set
-  useEffect(() => {
-    if (randomLyrics) {
-      console.log('random lyrics: ', randomLyrics);
-    }
-  }, [randomLyrics]);
+  // // rerender when lyrics value was set
+  // useEffect(() => {
+  //   if (lyrics !== '') {
+  //     generateRandomLyrics();
+  //   }
+  // }, [lyrics]);
 
   //////////////////////
 
@@ -265,7 +255,7 @@ function App() {
     setWrongLetters([])
 
     // get random track from trackList
-    getRandomTrack(trackList);
+    getRandomTrack(tracks);
   }
 
   const newArtist = () => {
@@ -275,7 +265,7 @@ function App() {
 
 
     // get random track from trackList
-    getRandomTrack(trackList);
+    getRandomTrack(tracks);
   }
 
   return (
