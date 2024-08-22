@@ -1,10 +1,10 @@
-const Word = ({ selectedWord, correctLetters }) => {
+const Word = ({ chosenSong, correctLetters }) => {
 
   const typeableChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
   return (
-    <div className="word">
-      {selectedWord.split('').map((letter, i) => {
+    <div className="song">
+      {chosenSong.split('').map((letter, i) => {
         // Filter out special chars
         if (!typeableChars.includes(letter)) {
           return <span className="special" key={i}>

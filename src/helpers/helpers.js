@@ -5,7 +5,7 @@ export function showNotification(setter) {
     }, 2000);
   }
   
-  export function checkWin(correct, wrong, word) {
+  export function checkWin(correct, wrong, song) {
     let status = 'win';
 
     // console.log('correct:', correct)
@@ -15,7 +15,7 @@ export function showNotification(setter) {
     const typeableChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
     // Check for win
-    word.split('').forEach(letter => {
+    song.split('').forEach(letter => {
       // don't check the special chars
       if (typeableChars.includes(letter) && !correct.includes(letter)) {
         status = '';

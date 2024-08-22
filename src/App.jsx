@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// import Header from './components/Header';
+import Welcome from './components/Welcome';
 import Figure from './components/Figure';
 import WrongLetters from './components/WrongLetters';
-import Word from './components/Word';
+import Song from './components/Song';
 import Popup from './components/Popup';
 import Notification from './components/Notification';
 import { showNotification as show } from './helpers/helpers';
+
 
 import './App.css';
 
 function App() {
 
-  const CLIENT_ID = "358bd2dd94e741ef857cf23a3c356dd9"
+  const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
   const REDIRECT_URI = "http://localhost:5173"
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
   const RESPONSE_TYPE = "token"
@@ -58,7 +59,6 @@ function App() {
   }
 
   const resetAllData = () => {
-    // setErrorMessage('');
     setArtistName('');
     setTracks([]);
     setChosenTrack(null);
@@ -74,27 +74,34 @@ function App() {
     setErrorMessage('');
     setNewGame(false)
     resetAllData()
+
+    try {
     // requests
-    const {data} = await axios.get('https://api.spotify.com/v1/search', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      params: {
-        q: searchKey,
-        type: 'artist'
-      }
-    })
+      const {data} = await axios.get('https://api.spotify.com/v1/search', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          q: searchKey,
+          type: 'artist'
+        }
+      })
 
-    const artistObj = data.artists.items[0]
-    setArtistName(artistObj.name)
+      const artistObj = data.artists.items[0]
+      setArtistName(artistObj.name)
 
-    const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistObj.id}/top-tracks`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-    })
+      const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistObj.id}/top-tracks`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      })
 
-    getRandomTrack(artistTopTracks.data.tracks)
+      getRandomTrack(artistTopTracks.data.tracks)
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('Session has expired. Please logout and log back in.')
+      resetAllData()
+    }
   }
 
   const getRandomTrack = (artistTracksList) => {
@@ -144,7 +151,6 @@ function App() {
 
     try {
       const response = await axios.get(`https://api.lyrics.ovh/v1/${artistName}/${chosenTrack.name.title}`)
-      // console.log(response.data.lyrics)
       generateRandomLyrics(response.data.lyrics)
     } catch (err) {
       console.error(err);
@@ -182,13 +188,6 @@ function App() {
       // getRandomTrack(trackList);
     }
   }, [chosenTrack, artistName, tracks]) // dependency array
-
-  // // rerender when lyrics value was set
-  // useEffect(() => {
-  //   if (lyrics !== '') {
-  //     generateRandomLyrics();
-  //   }
-  // }, [lyrics]);
 
   //////////////////////
 
@@ -249,8 +248,6 @@ function App() {
 
   const playAgain = () => {
     setPlayable(true);
-    // reset states
-    // resetAllData()
     setCorrectLetters([])
     setWrongLetters([])
 
@@ -263,7 +260,6 @@ function App() {
     // reset states
     resetAllData()
 
-
     // get random track from trackList
     getRandomTrack(tracks);
   }
@@ -271,9 +267,12 @@ function App() {
   return (
     <>
       {/* <Header /> */}
-      <h2>Guess the Song</h2>
+      <h1 className='big-header'>Guess the Song</h1>
         {!token ? 
-        <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login to Spotify</a>
+        <>
+          <Welcome /> 
+          <a className="start-button" href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login</a>
+        </>
         : 
         <>
           <button className="logout-button" onClick={handleLogout}>Logout</button>
@@ -282,7 +281,7 @@ function App() {
             (<>
               <form onSubmit={searchArtists}>
                 <input className="search-bar" type="text" placeholder="Enter artist name" onChange={e => setSearchKey(e.target.value)} />
-                <button className="search-button" type="submit">Search</button>
+                <button className="start-button" type="submit">Search</button>
               </form>
               {errorMessage && <p>{errorMessage}</p>}
             </>
@@ -293,7 +292,7 @@ function App() {
                 <>
                   <form onSubmit={searchArtists}>
                     <input className="search-bar" type="text" placeholder="Enter artist name" onChange={e => setSearchKey(e.target.value)} />
-                    <button className="search-button" type="submit">Search</button>
+                    <button className="start-button" type="submit">Search</button>
                   </form>
                   {errorMessage && <p>{errorMessage}</p>}
                 </>
@@ -313,9 +312,9 @@ function App() {
                       <div className="game-container">
                       <Figure wrongLetters={wrongLetters} />
                       <WrongLetters wrongLetters={wrongLetters} />
-                      <Word selectedWord={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
+                      <Song chosenSong={chosenTrack.name.title.toLowerCase()} correctLetters={correctLetters} />
                       </div>
-                      <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} selectedWord={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} newArtist={newArtist} />
+                      <Popup correctLetters={correctLetters} wrongLetters={wrongLetters} chosenSong={chosenTrack.name.title.toLowerCase()} setPlayable={setPlayable} playAgain={playAgain} newArtist={newArtist} />
                       <Notification showNotification={showNotification} />
                     </>
                     }
