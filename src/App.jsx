@@ -7,7 +7,7 @@ import WrongLetters from './components/WrongLetters';
 import Song from './components/Song';
 import Popup from './components/Popup';
 import Notification from './components/Notification';
-import { showNotification as show } from './helpers/helpers';
+import { show } from './helpers/helpers';
 
 
 import './App.css';
@@ -29,12 +29,11 @@ function App() {
   const [randomLyrics, setRandomLyrics] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
+  const [newGame, setNewGame] = useState(false)
   const [playable, setPlayable] = useState(true);
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
-
-  const [newGame, setNewGame] = useState(false)
 
   useEffect(() => {
     const hash = window.location.hash // the URL
@@ -99,8 +98,13 @@ function App() {
       getRandomTrack(artistTopTracks.data.tracks)
     } catch (err) {
       console.error(err);
-      setErrorMessage('Session has expired. Please logout and log back in.')
-      resetAllData()
+      if (searchKey === ''){
+        setErrorMessage('Please enter a valid artist.');
+        resetAllData();
+      } else {
+        setErrorMessage('Session has expired. Please logout and log back in.')
+        resetAllData();
+      }
     }
   }
 
@@ -147,7 +151,7 @@ function App() {
     if (!artistName === '' || !chosenTrack.name.title === ''){
       return;
     }
-    console.log(tracks)
+    // console.log(tracks)
 
     try {
       const response = await axios.get(`https://api.lyrics.ovh/v1/${artistName}/${chosenTrack.name.title}`)
@@ -183,7 +187,7 @@ function App() {
   // allows u to use track immediately after using setTrack
    useEffect(() => {
     if (chosenTrack && artistName && tracks){
-      console.log('track title: ', chosenTrack.name.title)
+      // console.log('track title: ', chosenTrack.name.title)
       getLyrics()
       // getRandomTrack(trackList);
     }
@@ -209,7 +213,7 @@ function App() {
   
       // Convert letter to lowercase to match the answer format
       const answer = chosenTrack.name.title.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '');  // remove special symbols
-      console.log('full answer: ', answer)
+      // console.log('full answer: ', answer)
 
       // Ensure the keyCode is between 65 and 90 (A-Z)
       if (playable) {
@@ -219,7 +223,7 @@ function App() {
           // add to array of correct letters
           if (!correctLetters.includes(letter)) {
             setCorrectLetters(currentLetters => [...currentLetters, letter]);
-            console.log('correct letters: ', correctLetters)
+            // console.log('correct letters: ', correctLetters)
 
           } else {
             show(setShowNotification); // we have alr entered the letter
@@ -227,7 +231,7 @@ function App() {
         } else {
           // Letter is not part of the answer
           if (!wrongLetters.includes(letter)) {
-            console.log('wrong letters: ', wrongLetters)
+            // console.log('wrong letters: ', wrongLetters)
             setWrongLetters(currentLetters => [...currentLetters, letter]);
           } else {
             show(setShowNotification);
@@ -263,6 +267,7 @@ function App() {
     // get random track from trackList
     getRandomTrack(tracks);
   }
+
 
   return (
     <>
