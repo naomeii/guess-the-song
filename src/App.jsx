@@ -15,7 +15,7 @@ import './App.css';
 function App() {
 
   const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
-  const REDIRECT_URI = "http://localhost:5173"
+  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
   const RESPONSE_TYPE = "token"
 
