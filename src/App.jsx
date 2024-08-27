@@ -14,12 +14,9 @@ import './App.css';
 
 function App() {
 
-  const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
-  const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
-  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
-  const RESPONSE_TYPE = "token"
+  const TOKEN = import.meta.env.VITE_TOKEN;
 
-  const [token, setToken] = useState('')
+  const [start, setStart] = useState(true)
   const [searchKey, setSearchKey] = useState('')
 
   const [artistName, setArtistName] = useState('')
@@ -34,28 +31,6 @@ function App() {
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
-
-  useEffect(() => {
-    const hash = window.location.hash // the URL
-    let token = window.localStorage.getItem('token') // retrieve token from LS
-
-    // if no token from LS and we have a hash
-    if (!token && hash) {
-      // split hash to retrieve token
-      token = hash.substring(1).split('&').find(elem => elem.startsWith('access_token')).split("=")[1]
-      // console.log(token)
-      window.location.hash = ''
-      window.localStorage.setItem('token', token);
-    }
-
-    setToken(token);
-
-  }, [])
-
-  const handleLogout = () => {
-    setToken('');
-    window.localStorage.removeItem('token');
-  }
 
   const resetAllData = () => {
     setArtistName('');
@@ -78,7 +53,7 @@ function App() {
     // requests
       const {data} = await axios.get('https://api.spotify.com/v1/search', {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${TOKEN}`
         },
         params: {
           q: searchKey,
@@ -91,7 +66,7 @@ function App() {
 
       const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistObj.id}/top-tracks`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${TOKEN}`
         },
       })
 
@@ -273,14 +248,14 @@ function App() {
     <>
       {/* <Header /> */}
       <h1 className='big-header'>Guess the Song</h1>
-        {!token ? 
+        {start ? 
         <>
           <Welcome /> 
-          <a className="start-button" href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login</a>
+          <button className="start-button" onClick={() => setStart(!start)}>Start</button>
         </>
         : 
         <>
-          <button className="logout-button" onClick={handleLogout}>Logout</button>
+          <button className="logout-button" onClick={() => setStart(!start)}>Quit</button>
           {
             newGame ?
             (<>
