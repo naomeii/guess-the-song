@@ -77,7 +77,7 @@ function App() {
         setErrorMessage('Please enter a valid artist.');
         resetAllData();
       } else {
-        setErrorMessage('Session has expired. Please logout and log back in.')
+        setErrorMessage('Token has expired. Please let the developer know.')
         resetAllData();
       }
     }
