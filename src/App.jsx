@@ -50,7 +50,7 @@ function App() {
     resetAllData()
 
     try {
-      const data = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${searchKey}&api_key=${API_KEY}&format=json/`)
+      const data = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${searchKey}&api_key=${API_KEY}&format=json`)
       // console.log(data.data.toptracks.track)
       const trackData = data.data.toptracks.track;
       const trackNames = trackData.map(obj => obj.name);
