@@ -9,15 +9,12 @@ import Popup from './components/Popup';
 import Notification from './components/Notification';
 import { show } from './helpers/helpers';
 
-
 import './App.css';
 
 function App() {
 
-  const TOKEN = import.meta.env.VITE_TOKEN;
-
-  const [start, setStart] = useState(true)
   const [searchKey, setSearchKey] = useState('')
+  const [start, setStart] = useState(false)
 
   const [artistName, setArtistName] = useState('')
   const [tracks, setTracks] = useState('')
@@ -31,6 +28,9 @@ function App() {
   const [correctLetters, setCorrectLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
+
+  const API_KEY = import.meta.env.VITE_API_KEY;
+
 
   const resetAllData = () => {
     setArtistName('');
@@ -50,37 +50,18 @@ function App() {
     resetAllData()
 
     try {
-    // requests
-      const {data} = await axios.get('https://api.spotify.com/v1/search', {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`
-        },
-        params: {
-          q: searchKey,
-          type: 'artist'
-        }
-      })
+      const data = await axios.get(`http://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${searchKey}&api_key=${API_KEY}&format=json`)
+      // console.log(data.data.toptracks.track)
+      const trackData = data.data.toptracks.track;
+      const trackNames = trackData.map(obj => obj.name);
 
-      const artistObj = data.artists.items[0]
-      setArtistName(artistObj.name)
+      setTracks(trackNames)
+      setArtistName(searchKey)
+      getRandomTrack(trackNames)
 
-      const artistTopTracks = await axios.get(`https://api.spotify.com/v1/artists/${artistObj.id}/top-tracks`, {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`
-        },
-      })
-
-      getRandomTrack(artistTopTracks.data.tracks)
     } catch (err) {
       console.error(err);
-      if (searchKey === ''){
-        setErrorMessage('Please enter a valid artist.');
-        resetAllData();
-      } else {
-        setErrorMessage('Token has expired. Please let the developer know.')
-        resetAllData();
-      }
-    }
+    } 
   }
 
   const getRandomTrack = (artistTracksList) => {
@@ -89,11 +70,10 @@ function App() {
     const randomTrack = Math.floor(Math.random() * artistTracksList.length)
     const selectedTrack = artistTracksList[randomTrack]
 
-    const name = trackNameAndFeature(selectedTrack.name)
+    const name = trackNameAndFeature(selectedTrack)
 
     const createdTrack = {
       name,
-      releaseDate: selectedTrack.album.release_date
     }
 
     setChosenTrack(createdTrack)
@@ -131,8 +111,8 @@ function App() {
     try {
       const response = await axios.get(`https://api.lyrics.ovh/v1/${artistName}/${chosenTrack.name.title}`)
       generateRandomLyrics(response.data.lyrics)
-    } catch (err) {
-      console.error(err);
+    } catch (err) { // couldn't fetch lyrics for the song
+      // console.error(err);
       setErrorMessage('Something went wrong. Please search again.')
       resetAllData()
     }
@@ -243,10 +223,14 @@ function App() {
     getRandomTrack(tracks);
   }
 
+  const handleQuit = () => {
+    resetAllData();
+    setStart(!start);
+  }
+
 
   return (
     <>
-      {/* <Header /> */}
       <h1 className='big-header'>Guess the Song</h1>
         {start ? 
         <>
@@ -255,7 +239,7 @@ function App() {
         </>
         : 
         <>
-          <button className="logout-button" onClick={() => setStart(!start)}>Quit</button>
+          <button className="logout-button" onClick={handleQuit}>Quit</button>
           {
             newGame ?
             (<>
@@ -283,8 +267,6 @@ function App() {
                   <pre>{randomLyrics !== '' && randomLyrics.join('\n')}</pre>
                     <p>
                       {chosenTrack && chosenTrack.name.feature && `Hint: ${chosenTrack.name.feature}`}
-                      {chosenTrack && chosenTrack.name.feature && <br />}
-                      {chosenTrack && `Release date: ${chosenTrack.releaseDate}`}
                     </p>
     
                     {artistName !== '' && chosenTrack &&
