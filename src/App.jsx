@@ -14,7 +14,7 @@ import './App.css';
 function App() {
 
   const [searchKey, setSearchKey] = useState('')
-  const [start, setStart] = useState(false)
+  const [start, setStart] = useState(true)
 
   const [artistName, setArtistName] = useState('')
   const [tracks, setTracks] = useState('')
